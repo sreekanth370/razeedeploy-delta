@@ -1,0 +1,8 @@
+node_modules/
+npm-debug.log
+build/
+.nyc_output/
+coverage/
+kubernetes/
+dev/
+test/
