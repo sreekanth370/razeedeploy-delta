@@ -136,6 +136,7 @@ async function decomposeFile(file) {
 async function apply(krm, file, options = {}) {
   let name = objectPath.get(file, 'metadata.name');
   let namespace = objectPath.get(file, 'metadata.namespace');
+  let kind = objectPath.get(file, 'kind');
   let uri = krm.uri({ name: objectPath.get(file, 'metadata.name'), namespace: objectPath.get(file, 'metadata.namespace') });
   log.debug(`Apply ${uri}`);
   let opt = { simple: false, resolveWithFullResponse: true };
@@ -171,6 +172,7 @@ async function apply(krm, file, options = {}) {
       } else if (res.statusCode < 200 || res.statusCode > 300) {
         return Promise.reject({ statusCode: res.statusCode, body: res.body });
       } else {
+        log.info(`${kind}/${name} configured`);
         return { statusCode: res.statusCode, body: res.body };
       }
     }
@@ -179,6 +181,7 @@ async function apply(krm, file, options = {}) {
     if (res.statusCode < 200 || res.statusCode > 300) {
       return Promise.reject({ statusCode: res.statusCode, body: res.body });
     } else {
+      log.info(`${kind}/${name} configured`);
       return { statusCode: res.statusCode, body: res.body };
     }
   } else {
@@ -188,7 +191,7 @@ async function apply(krm, file, options = {}) {
       log.debug(`Post ${post.statusCode} ${uri}`);
       return Promise.reject({ statusCode: post.statusCode, body: post.body });
     } else {
-      log.debug(`Post ${post.statusCode} ${uri}`);
+      log.info(`${kind}/${name} created`);
       return { statusCode: post.statusCode, body: post.body };
     }
   }
