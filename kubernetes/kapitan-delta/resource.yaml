@@ -14,12 +14,68 @@
 # limitations under the License.
 ################################################################################
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: razee
+  annotations:
+    razee.io/git-repo: "{{{GIT_REMOTE}}}"
+    razee.io/commit-sha: "{{TRAVIS_COMMIT}}"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kapitan-sa
+  namespace: razee
+  annotations:
+    razee.io/git-repo: "{{{GIT_REMOTE}}}"
+    razee.io/commit-sha: "{{TRAVIS_COMMIT}}"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-admin
+  namespace: razee
+  annotations:
+    razee.io/git-repo: "{{{GIT_REMOTE}}}"
+    razee.io/commit-sha: "{{TRAVIS_COMMIT}}"
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- nonResourceURLs:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kapitan-rb
+  annotations:
+    razee.io/git-repo: "{{{GIT_REMOTE}}}"
+    razee.io/commit-sha: "{{TRAVIS_COMMIT}}"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: kapitan-sa
+  namespace: razee
+---
+apiVersion: v1
 kind: ConfigMap
 data:
   s3download: "https://github.com/razee-io/S3Download/releases/download/0.0.1/resource.yaml"
 metadata:
   name: kapitan-delta-resource-uris
   namespace: razee
+  annotations:
+    razee.io/git-repo: "{{{GIT_REMOTE}}}"
+    razee.io/commit-sha: "{{TRAVIS_COMMIT}}"
 ---
 apiVersion: apps/v1
 kind: Deployment
