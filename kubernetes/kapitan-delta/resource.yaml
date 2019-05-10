@@ -69,7 +69,10 @@ subjects:
 apiVersion: v1
 kind: ConfigMap
 data:
-  s3download: "https://github.com/razee-io/S3Download/releases/download/0.0.1/resource.yaml"
+  RemoteResourceS3: "https://github.com/razee-io/RemoteResourceS3/releases/download/0.0.4/resource.yaml"
+  MustacheTemplate: "https://github.com/razee-io/MustacheTemplate/releases/download/0.0.1/resource.yaml"
+  FeatureFlagSetLD: "https://github.com/razee-io/FeatureFlagSetLD/releases/download/0.0.1/resource.yaml"
+  ManagedSet: "https://github.com/razee-io/ManagedSet/releases/download/0.0.1/resource.yaml"
 metadata:
   name: kapitan-delta-resource-uris
   namespace: razee
