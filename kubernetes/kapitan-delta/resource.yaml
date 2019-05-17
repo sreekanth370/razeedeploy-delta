@@ -105,7 +105,7 @@ spec:
     spec:
       serviceAccountName: kapitan-sa
       containers:
-      - image: "quay.io/razee/kapitan-delta:{{TRAVIS_COMMIT}}"
+      - image: "quay.io/razee/kapitan-delta:{{TRAVIS_TAG}}"
         resources:
           limits:
             memory: 150Mi
