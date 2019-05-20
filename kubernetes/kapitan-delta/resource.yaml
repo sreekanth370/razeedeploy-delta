@@ -70,6 +70,7 @@ apiVersion: v1
 kind: ConfigMap
 data:
   RemoteResourceS3: "https://github.com/razee-io/RemoteResourceS3/releases/latest/download/resource.yaml"
+  RemoteResource: "https://github.com/razee-io/RemoteResource/releases/latest/download/resource.yaml"
   MustacheTemplate: "https://github.com/razee-io/MustacheTemplate/releases/latest/download/resource.yaml"
   FeatureFlagSetLD: "https://github.com/razee-io/FeatureFlagSetLD/releases/latest/download/resource.yaml"
   ManagedSet: "https://github.com/razee-io/ManagedSet/releases/latest/download/resource.yaml"
