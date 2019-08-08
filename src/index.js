@@ -138,6 +138,7 @@ async function decomposeFile(file) {
 async function apply(krm, file, options = {}) {
   let name = objectPath.get(file, 'metadata.name');
   let namespace = objectPath.get(file, 'metadata.namespace', process.env.NAMESPACE);
+  objectPath.set(file, 'metadata.namespace', namespace);
   let kind = objectPath.get(file, 'kind');
   let uri = krm.uri({ name: name, namespace: namespace });
   log.debug(`Apply ${uri}`);
