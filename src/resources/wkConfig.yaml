@@ -14,6 +14,39 @@
 # limitations under the License.
 ################################################################################
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: watch-keeper-sa
+  namespace: "{{ desired_namespace }}"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-reader
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs:
+  - '*'
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: watch-keeper-rb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-reader
+subjects:
+- kind: ServiceAccount
+  name: watch-keeper-sa
+  namespace: "{{ desired_namespace }}"
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: watch-keeper-config
