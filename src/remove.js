@@ -120,9 +120,6 @@ async function main() {
         if (resources[i] === 'watch-keeper') {
           let wkConfigJson = await readYaml('./src/resources/wkConfig.yaml', { desired_namespace: argvNamespace });
           await deleteFile(wkConfigJson);
-        } else if (resources[i] === 'clustersubscription') {
-          let csConfigJson = await readYaml('./src/resources/csConfig.yaml', { desired_namespace: argvNamespace });
-          await deleteFile(csConfigJson);
         }
         let { file } = await download(resourceUris[i]);
         file = yaml.safeLoadAll(file);

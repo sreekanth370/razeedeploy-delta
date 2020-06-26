@@ -52,12 +52,8 @@ async function main() {
     : install clustersubscription at a specific version (Default 'latest')
 --rd-url, --razeedash-url=''
     : url that watch-keeper should post data to
---rd-api, --razeedash-api=''
-    : api url that clustersubscription should subscribe to (default '--razeedash-url.origin')
 --rd-org-key, --razeedash-org-key=''
     : org key that watch-keeper will use to authenticate with razeedash-url
---rd-tags, --razeedash-tags=''
-    : one or more comma-separated subscription tags which were defined in Razeedash
 --rd-cluster-id, --razeedash-cluster-id=''
     : cluster id to be stored into watch-keeper-config ConfigMap and used as the cluster id in RazeeDash instead of namespace.metadata.uid
 --rd-cluster-metadata64, --razeedash-cluster-metadata64=''
@@ -118,14 +114,7 @@ async function main() {
   } else if (rdUrl) {
     rdUrl = new URL(rdUrl);
   }
-  let rdApi = argv['rd-api'] || argv['razeedash-api'] || false;
-  if (rdApi && !validUrl.isUri(rdApi)) {
-    log.warn(`razeedash-api '${rdApi}' not a valid url.`);
-  } else if (rdApi) {
-    rdApi = new URL(rdApi);
-  }
   let rdOrgKey = argv['rd-org-key'] || argv['razeedash-org-key'] || false;
-  let rdTags = argv['rd-tags'] || argv['razeedash-tags'] || '';
   let rdclusterId = argv['rd-cluster-id'] || argv['razeedash-cluster-id'] || false;
   let rdclusterMetadata = [];
   const base64String = argv['rd-cluster-metadata64'] || argv['razeedash-cluster-metadata64'];
@@ -186,15 +175,6 @@ async function main() {
               razeedash_cluster_metadata: rdclusterMetadata,
             });
           await decomposeFile(wkConfigJson, 'ensureExists');
-        } else if (resources[i] === 'clustersubscription') {
-          if (!(installAll || resourcesObj.remoteresource.install)) {
-            log.warn('RemoteResource CRD must be one of the installed resources in order to use ClusterSubscription. (ie. --rr --cs).. Skipping ClusterSubscription');
-            continue;
-          }
-          if (!rdApi && !rdUrl) log.warn('Failed to find arg \'--razeedash-api\' or \'--razeedash-url\'.. will create template \'clustersubscription\' ConfigMap.');
-          if (!rdOrgKey) log.warn('Failed to find arg\'--razeedash-org-key\'.. will create template \'clustersubscription\' Secret.');
-          let csConfigJson = await readYaml('./src/resources/csConfig.yaml', { desired_namespace: argvNamespace, razeedash_url: rdApi.href || rdUrl.origin || 'insert-rd-url-here', razeedash_org_key: Buffer.from(rdOrgKey || 'api-key-youorgkeyhere').toString('base64'), razeedash_tags: rdTags });
-          await decomposeFile(csConfigJson, 'ensureExists');
         }
         let { file } = await download(resourceUris[i]);
         file = yaml.safeLoadAll(file);

@@ -32,12 +32,8 @@
     : install clustersubscription at a specific version (Default 'latest')
 --rd-url, --razeedash-url=''
     : url that watch-keeper should post data to
---rd-api, --razeedash-api=''
-    : api url that clustersubscription should subscribe to (default '--razeedash-url.origin')
 --rd-org-key, --razeedash-org-key=''
     : org key that watch-keeper will use to authenticate with razeedash-url
---rd-tags, --razeedash-tags=''
-    : one or more comma-separated subscription tags which were defined in Razeedash
 --rd-cluster-id, --razeedash-cluster-id=''
     : cluster id to be stored into watch-keeper-config ConfigMap and used as the cluster id in RazeeDash instead of namespace.metadata.uid
 --rd-cluster-metadata64, --razeedash-cluster-metadata64=''
@@ -103,6 +99,3 @@ from scratch, you must first delete these resources:
   - ConfigMap: `watch-keeper-limit-poll`
   - ConfigMap: `watch-keeper-non-namespaced`
   - NetworkPolicy: `watch-keeper-deny-ingress`
-- ClusterSubscription Config: (only when installing clustersubscription)
-  - ConfigMap: `clustersubscription`
-  - Secret: `clustersubscription`
