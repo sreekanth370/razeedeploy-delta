@@ -64,9 +64,9 @@ spec:
     spec:
       serviceAccountName: razeedeploy-sa
       securityContext:
-        runAsUser: {{{NODE_USER_ID}}}
-        runAsGroup: {{{NODE_GROUP_ID}}}
-        fsGroup: {{{NODE_GROUP_ID}}}
+        runAsUser: <%NODE_USER_ID%>
+        runAsGroup: <%NODE_GROUP_ID%>
+        fsGroup: <%NODE_GROUP_ID%>
       containers:
       containers:
       - name: razeedeploy-job
