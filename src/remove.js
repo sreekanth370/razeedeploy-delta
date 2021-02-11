@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const log = require('./bunyan-api').createLogger('razeedeploy-remove');
+const log = require(`${__dirname}/bunyan-api`).createLogger('razeedeploy-remove');
 const argv = require('minimist')(process.argv.slice(2));
 const validUrl = require('valid-url');
 
@@ -119,7 +119,7 @@ async function main() {
       if (removeAll || resourceUris[i].remove) {
         log.info(`=========== Removing ${resources[i]}:${resourceUris[i].remove || 'Remove All Resources'} ===========`);
         if (resources[i] === 'watchkeeper') {
-          let wkConfigJson = await readYaml('./src/resources/wkConfig.yaml', { desired_namespace: argvNamespace });
+          let wkConfigJson = await readYaml(`${__dirname}/resources/wkConfig.yaml`, { desired_namespace: argvNamespace });
           await deleteFile(wkConfigJson);
         }
         let { file } = await download(resourceUris[i]);
@@ -145,7 +145,7 @@ async function main() {
     }
 
     log.info('=========== Removing Prerequisites ===========');
-    let preReqsJson = await readYaml('./src/resources/preReqs.yaml', { desired_namespace: argvNamespace });
+    let preReqsJson = await readYaml(`${__dirname}/resources/preReqs.yaml`, { desired_namespace: argvNamespace });
     for (let i = 0; i < preReqsJson.length; i++) {
       let preReq = preReqsJson[i];
       let kind = objectPath.get(preReq, 'kind');
@@ -157,7 +157,7 @@ async function main() {
     }
     if (removeAll || (resourcesObj['clustersubscription'].remove && resourcesObj['watch-keeper'].remove)) {
       // if watch-keeper and clustersubscription are removed in seperate runs, ridConfig will be left on the cluster
-      let ridConfigJson = await readYaml('./src/resources/ridConfig.yaml', { desired_namespace: argvNamespace });
+      let ridConfigJson = await readYaml(`${__dirname}/resources/ridConfig.yaml`, { desired_namespace: argvNamespace });
       await deleteFile(ridConfigJson);
     }
 
@@ -305,9 +305,32 @@ async function deleteResource(krm, file, options = {}) {
   }
 }
 
-main().then(() => {
-  success === true ? process.exit(0) : process.exit(1);
-}).catch(e => {
-  log.error(e);
-  process.exit(1);
-});
+function createEventListeners() {
+  process.on('SIGTERM', () => {
+    log.info('recieved SIGTERM. not handling at this time.');
+  });
+  process.on('unhandledRejection', (reason) => {
+    log.error('recieved unhandledRejection', reason);
+  });
+  process.on('beforeExit', (code) => {
+    log.info(`No work found. exiting with code: ${code}`);
+  });
+
+}
+
+async function run() {
+  try {
+    createEventListeners();
+
+    await main();
+    success === true ? process.exit(0) : process.exit(1);
+  } catch (error) {
+    log.error(error);
+    process.exit(1);
+  }
+
+}
+
+module.exports = {
+  run
+};

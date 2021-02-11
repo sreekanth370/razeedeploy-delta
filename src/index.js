@@ -16,7 +16,7 @@
 const { KubeClass, KubeApiConfig } = require('@razee/kubernetes-util');
 const kubeApiConfig = KubeApiConfig();
 const kc = new KubeClass(kubeApiConfig);
-var log = require('./bunyan-api').createLogger('delta');
+var log = require(`${__dirname}/bunyan-api`).createLogger('delta');
 const objectPath = require('object-path');
 const yaml = require('js-yaml');
 const fs = require('fs-extra');
@@ -35,7 +35,7 @@ async function main() {
     await touch('/tmp/liveness');
     try {
       let resourceUris = [];
-      let files = await fs.readdir('./resource-uris');
+      let files = await fs.readdir(`${__dirname}/../resource-uris`);
       log.debug(`Found in dir ${JSON.stringify(files)}`);
       await Promise.all(files.map(async f => {
         if (f.startsWith('..')) {
@@ -43,7 +43,7 @@ async function main() {
           return;
         }
 
-        let uri = await fs.readFile(`./resource-uris/${f}`, { encoding: 'utf8' });
+        let uri = await fs.readFile(`${__dirname}/../resource-uris/${f}`, { encoding: 'utf8' });
         uri = uri.trim();
         if (!validUrl.isUri(`${uri}`)) {
           log.error(`uri ${uri} not valid`);
@@ -216,4 +216,30 @@ function reconcileFields(config, lastApplied, parentPath = []) {
   });
 }
 
-main().catch(e => log.error(e));
+function createEventListeners() {
+  process.on('SIGTERM', () => {
+    log.info('recieved SIGTERM. not handling at this time.');
+  });
+  process.on('unhandledRejection', (reason) => {
+    log.error('recieved unhandledRejection', reason);
+  });
+  process.on('beforeExit', (code) => {
+    log.info(`No work found. exiting with code: ${code}`);
+  });
+
+}
+
+async function run() {
+  try {
+    createEventListeners();
+
+    await main();
+  } catch (error) {
+    log.error(error);
+  }
+
+}
+
+module.exports = {
+  run
+};

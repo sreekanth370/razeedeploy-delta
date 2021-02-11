@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const log = require('./bunyan-api').createLogger('razeedeploy-install');
+const log = require(`${__dirname}/bunyan-api`).createLogger('razeedeploy-install');
 const argv = require('minimist')(process.argv.slice(2));
 const validUrl = require('valid-url');
 
@@ -163,7 +163,7 @@ async function main() {
 
   try {
     log.info('=========== Installing Prerequisites ===========');
-    let preReqsJson = await readYaml('./src/resources/preReqs.yaml', { desired_namespace: argvNamespace });
+    let preReqsJson = await readYaml(`${__dirname}/resources/preReqs.yaml`, { desired_namespace: argvNamespace });
     await decomposeFile(preReqsJson, 'ensureExists');
 
     let resourceUris = Object.values(resourcesObj);
@@ -175,7 +175,7 @@ async function main() {
     if (installAll || resourcesObj['clustersubscription'].install || resourcesObj['watchkeeper'].install) {
       if (!rdApi && !rdUrl) log.warn('Failed to find arg \'--razeedash-api\' or \'--razeedash-url\'.. will create template \'razee-identity\' config.');
       if (!rdOrgKey) log.warn('Failed to find arg\'--razeedash-org-key\'.. will create template \'razee-identity\' secret.');
-      let ridConfigJson = await readYaml('./src/resources/ridConfig.yaml', {
+      let ridConfigJson = await readYaml(`${__dirname}/resources/ridConfig.yaml`, {
         desired_namespace: argvNamespace,
         razeedash_api: rdApi.href || rdUrl.origin || 'insert-rd-url-here',
         razeedash_cluster_id: rdclusterId ? { id: rdclusterId } : false, // have set to false, {} puts any "" string value
@@ -188,7 +188,7 @@ async function main() {
       if (installAll || resourceUris[i].install) {
         log.info(`=========== Installing ${resources[i]}:${resourceUris[i].install || 'Install All Resources'} ===========`);
         if (resources[i] === 'watchkeeper') {
-          let wkConfigJson = await readYaml('./src/resources/wkConfig.yaml', {
+          let wkConfigJson = await readYaml(`${__dirname}/resources/wkConfig.yaml`, {
             desired_namespace: argvNamespace,
             razeedash_url: rdUrl.href ? { url: rdUrl.href } : false,
             razeedash_cluster_metadata: rdclusterMetadata,
@@ -211,7 +211,7 @@ async function main() {
 
     if (autoUpdate && (installAll || resourcesObj.remoteresource.install)) { // remoteresource must be installed to use autoUpdate
       log.info('=========== Installing Auto-Update RemoteResource ===========');
-      let autoUpdateJson = await readYaml('./src/resources/autoUpdateRR.yaml', { desired_namespace: argvNamespace });
+      let autoUpdateJson = await readYaml(`${__dirname}/resources/autoUpdateRR.yaml`, { desired_namespace: argvNamespace });
       objectPath.set(autoUpdateJson, '0.spec.requests', autoUpdateArray);
       try {
         await crdRegistered('deploy.razee.io/v1alpha2', 'RemoteResource');
@@ -390,9 +390,32 @@ async function ensureExists(krm, file, options = {}) {
   return response;
 }
 
-main().then(() => {
-  success === true ? process.exit(0) : process.exit(1);
-}).catch(e => {
-  log.error(e);
-  process.exit(1);
-});
+function createEventListeners() {
+  process.on('SIGTERM', () => {
+    log.info('recieved SIGTERM. not handling at this time.');
+  });
+  process.on('unhandledRejection', (reason) => {
+    log.error('recieved unhandledRejection', reason);
+  });
+  process.on('beforeExit', (code) => {
+    log.info(`No work found. exiting with code: ${code}`);
+  });
+
+}
+
+async function run() {
+  try {
+    createEventListeners();
+
+    await main();
+    success === true ? process.exit(0) : process.exit(1);
+  } catch (error) {
+    log.error(error);
+    process.exit(1);
+  }
+
+}
+
+module.exports = {
+  run
+};
